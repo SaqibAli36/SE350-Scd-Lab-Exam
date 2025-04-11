@@ -1,0 +1,27 @@
+<!-- templates/profile.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.email }}</h1>
+    <h2>Available Events</h2>
+    <ul>
+        {% for event in events %}
+        <li>{{ event.name }} - <button onclick="bookTicket('{{ event.id }}')">Book Now</button></li>
+        {% endfor %}
+    </ul>
+    <script>
+        function bookTicket(eventId) {
+            fetch("{{ url_for('book_ticket') }}", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({event_id: eventId})
+            }).then(response => response.json())
+            .then(data => alert(data.message));
+        }
+    </script>
+</body>
+</html>
+

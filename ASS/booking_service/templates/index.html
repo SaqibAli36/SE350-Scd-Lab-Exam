@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Booking</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center">Available Events</h2>
+
+        <!-- Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Events List -->
+        <div class="card p-4 mt-4">
+            <h4>Upcoming Events</h4>
+            <table class="table table-bordered mt-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Tickets</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ event.id }}</td>
+                        <td>{{ event.name }}</td>
+                        <td>{{ event.location }}</td>
+                        <td>{{ event.available_tickets }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('create_booking') }}">
+                                <input type="hidden" name="event_id" value="{{ event.id }}">
+                                <input type="hidden" name="user_id" value="1"> <!-- Mock User -->
+                                <input type="number" name="tickets" min="1" max="{{ event.available_tickets }}" required>
+                                <button type="submit" class="btn btn-primary btn-sm">Book</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{{ url_for('confirmation') }}" class="btn btn-success mt-3">View Confirmed Bookings</a>
+    </div>
+</body>
+</html>

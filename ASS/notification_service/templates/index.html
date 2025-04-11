@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?technology,abstract') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+        }
+        .overlay {
+            background: rgba(0, 0, 0, 0.6);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container mt-5">
+        <div class="header">
+            <h2>Notification System</h2>
+        </div>
+
+        <!-- Notification Form -->
+        <div class="card p-4 mt-4">
+            <h4>Send a Notification</h4>
+            <form id="notificationForm">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <input type="text" class="form-control" id="message" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Notification</button>
+            </form>
+        </div>
+
+        <!-- Notification List -->
+        <div class="card p-4 mt-4">
+            <h4>Recent Notifications</h4>
+            <ul id="notificationList" class="list-group">
+                <!-- Notifications will be loaded here dynamically -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchNotifications();
+        });
+
+        // Fetch Notifications from Flask API
+        function fetchNotifications() {
+            axios.get('/notifications')
+                .then(response => {
+                    const notifications = response.data;
+                    const list = document.getElementById('notificationList');
+                    list.innerHTML = "";
+                    notifications.forEach(notification => {
+                        const item = document.createElement('li');
+                        item.classList.add('list-group-item');
+                        item.innerHTML = `<strong>${notification.title}</strong>: ${notification.message}`;
+                        list.appendChild(item);
+                    });
+                })
+                .catch(error => console.error('Error fetching notifications:', error));
+        }
+
+        // Send Notification to RabbitMQ
+        document.getElementById('notificationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const message = document.getElementById('message').value;
+
+            axios.post('/send_notification', { title, message })
+                .then(response => {
+                    alert(response.data.message);
+                    fetchNotifications(); // Refresh notifications
+                    document.getElementById('notificationForm').reset();
+                })
+                .catch(error => console.error('Error sending notification:', error));
+        });
+    </script>
+</body>
+</html>
